@@ -1,0 +1,16 @@
+{
+  "name": "finance-proj",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "daily": "node src/run-daily.ts",
+    "site": "node src/render-site.ts",
+    "test": "node --test",
+    "typecheck": "node ../node_modules/typescript/bin/tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.59.1",
+    "playwright": "^1.59.1"
+  }
+}

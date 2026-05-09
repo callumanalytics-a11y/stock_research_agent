@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Market Signal Ledger - Saturday, 9 May 2026 at 11:08</title>
+    <meta
+      name="description"
+      content="A daily market research report with ranked stocks and index funds, confidence-weighted sentiment, and publication coverage."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="masthead">
+        <div class="masthead-copy">
+          <p class="kicker">Market Signal Ledger</p>
+          <h1>Daily research, arranged like a desk note instead of a dashboard toy.</h1>
+          <p class="lede">
+            Confidence-weighted equity and ETF ideas from financial publication headlines, with transparent scoring and source coverage.
+          </p>
+        </div>
+        <div class="masthead-meta">
+          <div class="meta-card">
+            <span class="meta-label">Published</span>
+            <strong id="published-at"></strong>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Assets Ranked</span>
+            <strong id="asset-count"></strong>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Sources Tracked</span>
+            <strong id="source-count"></strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="hero-panel" id="hero-panel"></section>
+
+        <section class="overview-grid">
+          <article class="overview-card">
+            <p class="section-label">Sentiment spread</p>
+            <div id="sentiment-overview" class="pill-row"></div>
+          </article>
+          <article class="overview-card">
+            <p class="section-label">Quick filters</p>
+            <div class="filter-row" id="filters"></div>
+          </article>
+        </section>
+
+        <section>
+          <div class="section-head">
+            <div>
+              <p class="section-label">Ranked ideas</p>
+              <h2>Research queue</h2>
+            </div>
+            <p class="section-note">Sorted by weighted score. Cards show sentiment confidence, score drivers, and supporting headlines.</p>
+          </div>
+          <div id="asset-grid" class="asset-grid"></div>
+        </section>
+
+        <section class="two-column">
+          <article class="panel">
+            <div class="section-head compact">
+              <div>
+                <p class="section-label">Coverage</p>
+                <h2>Publication ledger</h2>
+              </div>
+            </div>
+            <div id="source-list" class="source-list"></div>
+          </article>
+
+          <article class="panel">
+            <div class="section-head compact">
+              <div>
+                <p class="section-label">Market noise</p>
+                <h2>Headline tape</h2>
+              </div>
+            </div>
+            <div id="headline-list" class="headline-list"></div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script id="report-data" type="application/json">{"generatedAt":"2026-05-09T10:08:20.698Z","rankings":[{"symbol":"AAPL","label":"Apple","type":"stock","score":74,"conviction":"positive watchlist","sentimentConfidence":{"label":"neutral","confidence":0.5266878172888664,"probabilities":{"positive":0.23665609135556676,"neutral":0.5266878172888664,"negative":0.23665609135556676},"sampleSize":3},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0.2900317259332996,"macro":12,"credibility":12,"riskPenalty":0},"supportingHeadlines":[{"source":"Yahoo Finance UK","headline":"Apple price Target raised by Wedbush on AI expectations"},{"source":"Yahoo Finance UK","headline":"Intel–Apple deal boosts US stocks and chipmakers"},{"source":"Yahoo Finance UK","headline":"Intel–Apple deal boosts US stocks and chipmakers US stocks (^DJI, ^GSPC, ^IXIC) are moving higher on Friday on news that Apple (AAPL) and Intel (INTC) are partnering to produce chips. Meanwhile, the stronger-than-expected April jobs report is expected to keep the Federal Reserve holding interest rates as Kevin Warsh prepares to take over as chair in a week. Other trending tickers include Micron (MU) and Moderna (MRNA)."}],"signalCount":3,"rankingSource":"signal"},{"symbol":"VUKE","label":"Vanguard FTSE 100 UCITS ETF","type":"index_fund","score":71,"conviction":"positive watchlist","sentimentConfidence":{"label":"neutral","confidence":0.48425139792772764,"probabilities":{"positive":0.3087723237809168,"neutral":0.48425139792772764,"negative":0.20697627829135548},"sampleSize":7},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0.2263770968915915,"macro":8,"credibility":13,"riskPenalty":0},"supportingHeadlines":[{"source":"Investors' Chronicle","headline":"Can Cranswick offer premium sausages and a premium share price?Deep Dive: The FTSE 250 company wants to control its supply chain, expand overseas, and maintain quality. But all this comes at a cost"},{"source":"Investors' Chronicle","headline":"FTSE 350 Review 2026: The complete guide to the UK stock marketOur sector-by-sector analysis of London-listed stocks and our favourite picks for the year ahead"},{"source":"City AM","headline":"FTSE 100’s Intertek rejects sweetened £10bn bid from EQT"},{"source":"City AM","headline":"FTSE 100 Live: Stocks down on election day; oil back below $100 as Iran deal hangs in balance"},{"source":"City AM","headline":"Oil price pulls back and FTSE 100 rebounds after ‘TACO’ Trump post"}],"signalCount":7,"rankingSource":"signal"},{"symbol":"NVDA","label":"Nvidia","type":"stock","score":70,"conviction":"positive watchlist","sentimentConfidence":{"label":"neutral","confidence":0.5266878172888664,"probabilities":{"positive":0.2366560913555668,"neutral":0.5266878172888664,"negative":0.2366560913555668},"sampleSize":1},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0.2900317259332996,"macro":8,"credibility":12,"riskPenalty":0},"supportingHeadlines":[{"source":"Yahoo Finance UK","headline":"US Said to Suspect Nvidia Chips Smuggled to Alibaba Via Thailand"}],"signalCount":1,"rankingSource":"signal"},{"symbol":"TSLA","label":"Tesla","type":"stock","score":62,"conviction":"positive watchlist","sentimentConfidence":{"label":"neutral","confidence":0.5266878172888664,"probabilities":{"positive":0.2366560913555668,"neutral":0.5266878172888664,"negative":0.2366560913555668},"sampleSize":1},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0.2900317259332996,"macro":0,"credibility":12,"riskPenalty":0},"supportingHeadlines":[{"source":"Yahoo Finance UK","headline":"TSLA Tesla, Inc. 428.35 +16.54 (+4.02%)"}],"signalCount":1,"rankingSource":"signal"},{"symbol":"MSFT","label":"Microsoft","type":"stock","score":50,"conviction":"mixed / monitor","sentimentConfidence":{"label":"neutral","confidence":0.3333333333333333,"probabilities":{"positive":0.3333333333333333,"neutral":0.3333333333333333,"negative":0.3333333333333333},"sampleSize":0},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0,"macro":0,"credibility":0,"riskPenalty":0},"supportingHeadlines":[],"signalCount":0,"rankingSource":"backfill"},{"symbol":"AMZN","label":"Amazon","type":"stock","score":50,"conviction":"mixed / monitor","sentimentConfidence":{"label":"neutral","confidence":0.3333333333333333,"probabilities":{"positive":0.3333333333333333,"neutral":0.3333333333333333,"negative":0.3333333333333333},"sampleSize":0},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0,"macro":0,"credibility":0,"riskPenalty":0},"supportingHeadlines":[],"signalCount":0,"rankingSource":"backfill"},{"symbol":"GOOGL","label":"Alphabet","type":"stock","score":50,"conviction":"mixed / monitor","sentimentConfidence":{"label":"neutral","confidence":0.3333333333333333,"probabilities":{"positive":0.3333333333333333,"neutral":0.3333333333333333,"negative":0.3333333333333333},"sampleSize":0},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0,"macro":0,"credibility":0,"riskPenalty":0},"supportingHeadlines":[],"signalCount":0,"rankingSource":"backfill"},{"symbol":"META","label":"Meta","type":"stock","score":50,"conviction":"mixed / monitor","sentimentConfidence":{"label":"neutral","confidence":0.3333333333333333,"probabilities":{"positive":0.3333333333333333,"neutral":0.3333333333333333,"negative":0.3333333333333333},"sampleSize":0},"breakdown":{"base":50,"momentum":0,"sentiment":0,"sentimentConfidenceWeight":0,"macro":0,"credibility":0,"riskPenalty":0},"supportingHeadlines":[],"signalCount":0,"rankingSource":"backfill"}],"sources":[{"id":"ft-markets","name":"Financial Times","url":"https://www.ft.com/markets","headlineCount":36,"error":null},{"id":"investors-chronicle","name":"Investors' Chronicle","url":"https://www.investorschronicle.co.uk/","headlineCount":32,"error":null},{"id":"moneyweek","name":"MoneyWeek","url":"https://moneyweek.com/investments","headlineCount":13,"error":null},{"id":"cityam-markets","name":"City AM","url":"https://www.cityam.com/news/markets/","headlineCount":29,"error":null},{"id":"morningstar-uk","name":"Morningstar UK","url":"https://www.morningstar.co.uk/uk/","headlineCount":1,"error":null},{"id":"shares-magazine","name":"Shares Magazine","url":"https://www.sharesmagazine.co.uk/","headlineCount":25,"error":null},{"id":"the-banker","name":"The Banker","url":"https://www.thebanker.com/","headlineCount":23,"error":null},{"id":"reuters-markets","name":"Reuters Markets","url":"https://www.reuters.com/markets/","headlineCount":0,"error":null},{"id":"bloomberg-uk","name":"Bloomberg UK","url":"https://www.bloomberg.com/uk","headlineCount":1,"error":null},{"id":"yahoo-finance-uk","name":"Yahoo Finance UK","url":"https://uk.finance.yahoo.com/","headlineCount":45,"error":null}],"headlineSample":["Impartial reporting, expert analysis, informed opinions","14th Annual Cross-Border Distribution Conference","Uber-backed electric bike start-up Lime files for $2bn IPO","Investors dump Indian assets as energy shock sends rupee sliding","Macquarie’s commodities boss paid more than CEO as profits soar","Billionaire James Packer among backers of Architect’s OnlyFans deal","Koreans flock to pay with their faces","US fund threatens to divest TotalEnergies stake over offshore wind exit","How politicians should talk to bond markets","Why the shift from savings glut to grab is good for investors","Warsh would be wise to listen to Fed dissenters","Why the Iran war might not spur a faster transition to low-carbon energy","Sign up to the Unhedged newsletter, for markets, finance and strong opinions","Sign up to the Lex newsletter, for exclusive insight and analysis","UBS boss warns of European decline with ‘over-regulation across the board’","Markets are banking on the ‘Bliss trade’","Europe’s €14tn cash pile benefits banks not retail investors, BlackRock warns","Retail investors turn away from commercial property holdings","Brazil ends IPO drought as Iran war fuels stock market rally","Middle East crisis day 70 as it happened: US strikes 2 Iranian-flagged oil tankers as ceasefire comes under new strains","LNG carriers test Iran blockade in Strait of Hormuz","Directors’ Deals: Pan African chair sells amid the gold bull run","Gilts gain as Starmer clings on","Lex. While AI pumps up portfolios, some companies sound the alarm","Alphaville. ‘The risk of $5 gasoline can no longer be dismissed’","Trump says Iran ceasefire holds despite exchange of fire","The fusion power race is heating up","The energy shock is not all about price","Alphaville. We read CZ’s ‘memoir’ to protect anyone else from having to","March wage growth in Japan supportive of June rate rise","Quarterly reporting: when is less important than what","Big money, hot markets and ‘blissful ignorance’ at Milken","Middle East crisis day 69 as it happened: US and Iran clash in Hormuz as ceasefire comes under strain","Lex. Tech boom brings emerging markets and their rich cousins closer together","‘Blissful ignorance’: Milken elite bask in glow of roaring markets","IMF warns new AI models risk ‘systemic’ shock to finance","Britain’s problems won’t end with the war","Why the Opec-UAE battle is futile","Does ‘dynamic’ pricing actually make things more expensive?","UK stocks aren’t letting the rental crisis go to waste","This small cap’s AGM should test Aim governance","How to pick funds, Diageo and hotel stocks","‘There’s a lot of value in emerging markets’: Paul Niven of F&C","Electrifying your portfolio & chemical stock struggles","Isas, apps and platforms: Where to invest your money","The European funds that are having a great yearThe Middle East conflict has dented investor optimism, but some funds are proving resilient","‘I sold my business for £1.1mn – how do I use this for income?’Portfolio Clinic: Our readers want a strategy that pays them £90,000 a year. Helen Kirrane finds out if it’s possible","Can Cranswick offer premium sausages and a premium share price?Deep Dive: The FTSE 250 company wants to control its supply chain, expand overseas, and maintain quality. But all this comes at a cost","Vodafone & Land Securities: Stock market week ahead – 11-15 May","Pan African & Vistry: Big director share deals"]}</script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
