@@ -10,6 +10,29 @@ function normalizeSentiment(netSentiment = 0): number {
   return clamp(netSentiment * 6, -18, 18);
 }
 
+function marketMomentumBlend(signals: AssetSignals): { value: number; source: 'market_data' | 'headline_fallback' | 'none' } {
+  const marketMomentum = signals.marketData?.momentum;
+
+  if (marketMomentum) {
+    return {
+      value: marketMomentum.dailyPercent * 0.6 + marketMomentum.fiveDayPercent * 0.4,
+      source: 'market_data',
+    };
+  }
+
+  if (signals.performanceSignals.length > 0) {
+    return {
+      value: signals.performanceSignals.reduce((sum, item) => sum + item.percentChange, 0),
+      source: 'headline_fallback',
+    };
+  }
+
+  return {
+    value: 0,
+    source: 'none',
+  };
+}
+
 function sentimentDirectionFromProbabilities(
   probabilities: { positive: number; neutral: number; negative: number },
 ): number {
@@ -46,13 +69,12 @@ function labelForScore(score: number): ConvictionLabel {
 
 export function scoreAsset(asset: WatchlistAsset, signals: AssetSignals): ScoredAsset {
   const sentimentConfidence = summarizeSentimentConfidence(signals.sentimentSignals);
+  const momentumInput = marketMomentumBlend(signals);
   const netSentiment = signals.sentimentSignals.reduce((sum, item) => sum + item.netSentiment, 0);
   const rawSentiment = normalizeSentiment(netSentiment);
   const sentimentDirection = sentimentDirectionFromProbabilities(sentimentConfidence.probabilities);
   const sentimentConfidenceWeight = confidenceWeight(sentimentConfidence.confidence);
-  const momentum = normalizeMomentum(
-    signals.performanceSignals.reduce((sum, item) => sum + item.percentChange, 0),
-  );
+  const momentum = normalizeMomentum(momentumInput.value);
   const sentiment = Math.round(Math.abs(rawSentiment) * sentimentDirection * sentimentConfidenceWeight);
   const macro = normalizeMacro(signals.macroSignals.reduce((sum, value) => sum + value, 0));
   const credibility = normalizeCredibility(
@@ -72,10 +94,13 @@ export function scoreAsset(asset: WatchlistAsset, signals: AssetSignals): Scored
     type: asset.type,
     score,
     conviction: labelForScore(score),
+    marketData: signals.marketData,
     sentimentConfidence,
     breakdown: {
       base: 50,
       momentum,
+      rawMomentumPercent: momentumInput.value,
+      momentumSource: momentumInput.source,
       sentiment,
       sentimentConfidenceWeight,
       macro,

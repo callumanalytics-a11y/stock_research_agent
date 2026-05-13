@@ -3,12 +3,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SOURCES } from './config/sources.ts';
 import { WATCHLIST } from './config/watchlist.ts';
+import { getMarketDataSnapshots } from './lib/market-data/service.ts';
 import { matchAssetsToHeadline } from './lib/match.ts';
 import { buildMarkdownReport } from './lib/report.ts';
 import { buildSiteAssets } from './lib/site.ts';
 import { scoreAsset } from './lib/scoring.ts';
 import { scrapeSources } from './lib/scrape.ts';
-import type { AssetSignals, DailyReport, RankedAsset, ScrapedSourceResult, WatchlistAsset } from './types/models.ts';
+import type { AssetSignals, DailyReport, MarketDataSnapshot, RankedAsset, ScrapedSourceResult, WatchlistAsset } from './types/models.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,11 +23,17 @@ function createEmptySignals(): AssetSignals {
     macroSignals: [],
     sourceWeights: [],
     matchedHeadlines: [],
+    marketData: null,
   };
 }
 
-function buildSignalsForAsset(asset: WatchlistAsset, sourceResults: ScrapedSourceResult[]): AssetSignals {
+function buildSignalsForAsset(
+  asset: WatchlistAsset,
+  sourceResults: ScrapedSourceResult[],
+  marketData: Record<string, MarketDataSnapshot>,
+): AssetSignals {
   const signals = createEmptySignals();
+  signals.marketData = marketData[asset.symbol] ?? null;
 
   for (const source of sourceResults) {
     for (const item of source.headlines) {
@@ -52,9 +59,12 @@ function buildSignalsForAsset(asset: WatchlistAsset, sourceResults: ScrapedSourc
   return signals;
 }
 
-function buildRankings(sourceResults: ScrapedSourceResult[]): RankedAsset[] {
+function buildRankings(
+  sourceResults: ScrapedSourceResult[],
+  marketData: Record<string, MarketDataSnapshot>,
+): RankedAsset[] {
   const allRankings = WATCHLIST.map((asset) => {
-    const signals = buildSignalsForAsset(asset, sourceResults);
+    const signals = buildSignalsForAsset(asset, sourceResults, marketData);
     const score = scoreAsset(asset, signals);
     const rankingSource: RankedAsset['rankingSource'] = signals.matchedHeadlines.length > 0 ? 'signal' : 'backfill';
 
@@ -78,10 +88,13 @@ function buildRankings(sourceResults: ScrapedSourceResult[]): RankedAsset[] {
     .slice(0, MIN_RANKED_IDEAS);
 }
 
-function buildReport(sourceResults: ScrapedSourceResult[]): DailyReport {
+function buildReport(
+  sourceResults: ScrapedSourceResult[],
+  marketData: Record<string, MarketDataSnapshot>,
+): DailyReport {
   return {
     generatedAt: new Date().toISOString(),
-    rankings: buildRankings(sourceResults),
+    rankings: buildRankings(sourceResults, marketData),
     sources: sourceResults.map((source) => ({
       id: source.sourceId,
       name: source.sourceName,
@@ -100,7 +113,8 @@ async function main(): Promise<void> {
   await mkdir(siteDir, { recursive: true });
 
   const sourceResults = await scrapeSources(SOURCES);
-  const report = buildReport(sourceResults);
+  const marketData = await getMarketDataSnapshots(WATCHLIST.map((asset) => asset.symbol));
+  const report = buildReport(sourceResults, marketData);
   const markdown = buildMarkdownReport(report);
   const siteAssets = buildSiteAssets(report);
 

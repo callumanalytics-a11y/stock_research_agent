@@ -20,6 +20,44 @@ export interface PerformanceSignal {
   phrase: string;
 }
 
+export type MarketDataProvider = 'alpaca' | 'none';
+
+export interface MarketQuote {
+  symbol: string;
+  lastPrice: number;
+  previousClose?: number;
+  changePercent?: number;
+  asOf: string;
+  provider: MarketDataProvider;
+}
+
+export interface MarketBar {
+  symbol: string;
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume?: number;
+}
+
+export interface MarketMomentum {
+  dailyPercent: number;
+  fiveDayPercent: number;
+  twentyDayPercent?: number;
+}
+
+export interface MarketDataSnapshot {
+  symbol: string;
+  provider: MarketDataProvider;
+  quote: MarketQuote | null;
+  bars: MarketBar[];
+  momentum: MarketMomentum | null;
+  error: string | null;
+}
+
+export type MomentumSource = 'market_data' | 'headline_fallback' | 'none';
+
 export interface SentimentLogits {
   positive: number;
   neutral: number;
@@ -72,11 +110,14 @@ export interface AssetSignals {
   macroSignals: number[];
   sourceWeights: number[];
   matchedHeadlines: SupportingHeadline[];
+  marketData: MarketDataSnapshot | null;
 }
 
 export interface ScoreBreakdown {
   base: number;
   momentum: number;
+  rawMomentumPercent: number;
+  momentumSource: MomentumSource;
   sentiment: number;
   sentimentConfidenceWeight: number;
   macro: number;
@@ -103,6 +144,7 @@ export interface ScoredAsset {
   type: AssetType;
   score: number;
   conviction: ConvictionLabel;
+  marketData: MarketDataSnapshot | null;
   sentimentConfidence: SentimentConfidenceSummary;
   breakdown: ScoreBreakdown;
 }

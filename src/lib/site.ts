@@ -311,6 +311,21 @@ body::before {
   color: var(--green);
 }
 
+.signal-chip.market-data {
+  background: rgba(33, 98, 82, 0.12);
+  color: var(--green);
+}
+
+.signal-chip.headline-fallback {
+  background: rgba(159, 110, 47, 0.14);
+  color: #7c5c2b;
+}
+
+.signal-chip.none {
+  background: rgba(21, 32, 31, 0.08);
+  color: var(--muted);
+}
+
 .hero-title {
   margin: 0;
   font-size: clamp(2rem, 4vw, 3.3rem);
@@ -751,6 +766,12 @@ function formatAssetType(value) {
   return value.replaceAll('_', ' ');
 }
 
+function momentumSourceLabel(value) {
+  if (value === 'market_data') return 'Market data';
+  if (value === 'headline_fallback') return 'Headline fallback';
+  return 'No momentum';
+}
+
 function filteredRankings() {
   if (state.filter === 'all') return report.rankings;
   if (state.filter === 'signal-only') return report.rankings.filter((item) => item.rankingSource === 'signal');
@@ -848,6 +869,7 @@ function renderAssets() {
                 <span class="asset-symbol">\${item.symbol}</span>
                 <span class="asset-type">\${escapeHtml(formatAssetType(item.type))}</span>
                 <span class="signal-chip \${item.rankingSource}">\${item.rankingSource === 'signal' ? 'Signal-backed' : 'Backfill'}</span>
+                <span class="signal-chip \${item.breakdown.momentumSource.replaceAll('_', '-')}">\${escapeHtml(momentumSourceLabel(item.breakdown.momentumSource))}</span>
               </div>
               <div>
                 <h3 class="asset-title">\${escapeHtml(item.label)}</h3>
@@ -899,6 +921,21 @@ function renderAssets() {
             <div class="breakdown-item">
               <span>Credibility</span>
               <strong>\${item.breakdown.credibility > 0 ? '+' : ''}\${item.breakdown.credibility}</strong>
+            </div>
+          </div>
+
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span>Last price</span>
+              <strong>\${item.marketData && item.marketData.quote ? item.marketData.quote.lastPrice.toFixed(2) : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>1D move</span>
+              <strong>\${item.marketData && item.marketData.quote && item.marketData.quote.changePercent !== undefined ? (item.marketData.quote.changePercent > 0 ? '+' : '') + item.marketData.quote.changePercent.toFixed(2) + '%' : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>5D move</span>
+              <strong>\${item.marketData && item.marketData.momentum ? (item.marketData.momentum.fiveDayPercent > 0 ? '+' : '') + item.marketData.momentum.fiveDayPercent.toFixed(2) + '%' : 'n/a'}</strong>
             </div>
           </div>
 

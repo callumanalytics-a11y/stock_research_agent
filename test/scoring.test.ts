@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { createEmptyMarketSnapshot } from '../src/lib/market-data/provider.ts';
 import { predictSentimentFromHits } from '../src/lib/sentiment.ts';
 import { scoreAsset } from '../src/lib/scoring.ts';
 import type { AssetSignals, WatchlistAsset } from '../src/types/models.ts';
@@ -11,6 +12,7 @@ function buildSignals(overrides: Partial<AssetSignals>): AssetSignals {
     macroSignals: [],
     sourceWeights: [],
     matchedHeadlines: [],
+    marketData: null,
     ...overrides,
   };
 }
@@ -36,6 +38,7 @@ test('scoreAsset rewards strong positive signals', () => {
   assert.ok(result.sentimentConfidence.confidence > 0.5);
   assert.ok(result.breakdown.sentiment > 0);
   assert.ok(result.breakdown.sentimentConfidenceWeight > 0.5);
+  assert.equal(result.breakdown.momentumSource, 'headline_fallback');
 });
 
 test('scoreAsset penalizes negative signals', () => {
@@ -58,6 +61,7 @@ test('scoreAsset penalizes negative signals', () => {
   assert.ok(result.sentimentConfidence.confidence > 0.5);
   assert.ok(result.breakdown.sentiment < 0);
   assert.ok(result.breakdown.sentimentConfidenceWeight > 0.5);
+  assert.equal(result.breakdown.momentumSource, 'headline_fallback');
 });
 
 test('scoreAsset dampens low-confidence mixed sentiment', () => {
@@ -76,4 +80,26 @@ test('scoreAsset dampens low-confidence mixed sentiment', () => {
   assert.ok(result.sentimentConfidence.confidence < 0.5);
   assert.ok(result.breakdown.sentimentConfidenceWeight < 0.3);
   assert.equal(result.breakdown.sentiment, 0);
+  assert.equal(result.breakdown.momentumSource, 'none');
+});
+
+test('scoreAsset prefers market-data momentum when available', () => {
+  const asset: WatchlistAsset = { symbol: 'AAPL', label: 'Apple', type: 'stock', aliases: [] };
+  const result = scoreAsset(
+    asset,
+    buildSignals({
+      performanceSignals: [{ percentChange: -5, phrase: 'down 5%' }],
+      marketData: {
+        ...createEmptyMarketSnapshot('AAPL', 'alpaca'),
+        momentum: {
+          dailyPercent: 4,
+          fiveDayPercent: 6,
+        },
+      },
+    }),
+  );
+
+  assert.equal(result.breakdown.momentumSource, 'market_data');
+  assert.equal(Number(result.breakdown.rawMomentumPercent.toFixed(2)), 4.8);
+  assert.ok(result.breakdown.momentum > 0);
 });
