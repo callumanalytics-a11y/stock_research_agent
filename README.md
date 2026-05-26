@@ -4,7 +4,7 @@ A Playwright-powered research agent that:
 
 - visits finance and news publication pages
 - extracts daily stock-performance snippets and major headlines
-- optionally fetches market prices from Alpaca
+- optionally fetches market prices from Alpaca or Yahoo Finance
 - maps those signals to a configurable watchlist of stocks and index funds
 - produces a transparent weighted score for research prioritisation
 
@@ -16,7 +16,7 @@ This project is designed for daily idea generation and ranking, not automated tr
 
 1. Open configured publication pages such as FT, City AM, Investors' Chronicle, MoneyWeek, Reuters, and Yahoo Finance UK.
 2. Collect headline-like text from the page and look for price-action language such as `up 4.2%`, `shares fall`, or `stocks jump`.
-3. Optionally fetch real market data for the watchlist from Alpaca.
+3. Optionally fetch real market data for the watchlist from Alpaca or Yahoo Finance.
 4. Match headlines against a watchlist of stocks and ETFs using names, aliases, and tickers.
 5. Score each candidate based on:
    - market momentum when available
@@ -49,16 +49,19 @@ npx playwright install chromium
 
 ## Market data setup
 
-The project can use Alpaca market data for real price-based momentum.
+The project can use Alpaca or Yahoo Finance market data for real price-based momentum.
 
 1. Copy `.env.example` to your own env file or export the variables in your shell.
-2. Set:
+   Create a real `.env` file in the repo root if you want `npm run daily` to load the settings automatically.
+2. For Yahoo Finance fallback, set:
+   - `MARKET_DATA_PROVIDER=yfinance`
+3. For Alpaca, set:
    - `MARKET_DATA_PROVIDER=alpaca`
    - `ALPACA_API_KEY`
    - `ALPACA_API_SECRET`
-3. Run `npm run daily`
+4. Run `npm run daily`
 
-If Alpaca credentials are not configured, the app still works and falls back to headline-based momentum.
+If no market data provider is configured, the app still works and falls back to headline-based momentum.
 
 ## Customize
 
@@ -72,4 +75,5 @@ If Alpaca credentials are not configured, the app still works and falls back to 
 - Sites with strict paywalls may expose only partial headline text.
 - CSS structures change often, so selectors and heuristics will need occasional maintenance.
 - Alpaca market data requires credentials and may still return partial coverage or rate-limited responses.
+- Yahoo Finance fallback is convenient for testing, but it is unofficial and should be treated as a lower-trust integration path.
 - The output should be treated as a research shortlist for human review.

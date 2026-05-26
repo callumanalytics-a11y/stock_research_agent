@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SOURCES } from './config/sources.ts';
 import { WATCHLIST } from './config/watchlist.ts';
+import { loadEnvFile } from './lib/env.ts';
 import { getMarketDataSnapshots } from './lib/market-data/service.ts';
 import { matchAssetsToHeadline } from './lib/match.ts';
 import { buildMarkdownReport } from './lib/report.ts';
@@ -109,6 +110,7 @@ function buildReport(
 async function main(): Promise<void> {
   const outputDir = path.join(projectRoot, 'output');
   const siteDir = path.join(outputDir, 'site');
+  await loadEnvFile(projectRoot);
   await mkdir(outputDir, { recursive: true });
   await mkdir(siteDir, { recursive: true });
 

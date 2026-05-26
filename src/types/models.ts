@@ -20,7 +20,7 @@ export interface PerformanceSignal {
   phrase: string;
 }
 
-export type MarketDataProvider = 'alpaca' | 'none';
+export type MarketDataProvider = 'alpaca' | 'yfinance' | 'none';
 
 export interface MarketQuote {
   symbol: string;
