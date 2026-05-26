@@ -180,7 +180,7 @@ function renderAssets() {
             </div>
             <div class="breakdown-item">
               <span>Momentum</span>
-              <strong>${item.breakdown.momentum > 0 ? '+' : ''}${item.breakdown.momentum}</strong>
+              <strong>${item.breakdown.momentum > 0 ? '+' : ''}${item.breakdown.momentum.toFixed(2)}</strong>
             </div>
             <div class="breakdown-item">
               <span>Macro</span>
