@@ -4,6 +4,10 @@ import type { MarketDataClient } from './types.ts';
 import type { MarketBar, MarketDataSnapshot, MarketQuote } from '../../types/models.ts';
 
 const YAHOO_CHART_BASE_URL = 'https://query1.finance.yahoo.com/v8/finance/chart';
+const YAHOO_SYMBOL_ALIASES: Record<string, string> = {
+  VUKE: 'VUKE.L',
+  VUSA: 'VUSA.L',
+};
 
 interface YahooChartResponse {
   chart?: {
@@ -30,7 +34,8 @@ interface YahooChartResult {
   };
 }
 
-function buildYahooUrl(symbol: string): string {
+export function buildYahooUrl(symbol: string): string {
+  const yahooSymbol = YAHOO_SYMBOL_ALIASES[symbol] ?? symbol;
   const params = new URLSearchParams({
     interval: '1d',
     range: '1mo',
@@ -38,7 +43,7 @@ function buildYahooUrl(symbol: string): string {
     events: 'div,splits',
   });
 
-  return `${YAHOO_CHART_BASE_URL}/${encodeURIComponent(symbol)}?${params.toString()}`;
+  return `${YAHOO_CHART_BASE_URL}/${encodeURIComponent(yahooSymbol)}?${params.toString()}`;
 }
 
 function toIsoTimestamp(unixSeconds: number): string {

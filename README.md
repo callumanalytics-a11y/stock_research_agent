@@ -61,7 +61,7 @@ The project can use Alpaca or Yahoo Finance market data for real price-based mom
    - `ALPACA_API_SECRET`
 4. Run `npm run daily`
 
-If no market data provider is configured, the app still works and falls back to headline-based momentum.
+If no market data provider is configured, the app defaults to `yfinance` so you can test the market-data path immediately. Set `MARKET_DATA_PROVIDER=none` if you want to disable market data entirely.
 
 ## Customize
 

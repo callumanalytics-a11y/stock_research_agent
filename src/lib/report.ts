@@ -4,8 +4,26 @@ function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
+function formatPercentPoints(value: number): string {
+  return `${value.toFixed(2)}%`;
+}
+
 function formatPrice(value: number): string {
   return value.toFixed(2);
+}
+
+function formatEventType(value: string): string {
+  return value.replaceAll('_', ' ');
+}
+
+function formatEventMix(topEvents: { eventType: string; direction: string; count: number }[]): string {
+  if (topEvents.length === 0) {
+    return 'none';
+  }
+
+  return topEvents
+    .map((event) => `${formatEventType(event.eventType)} ${event.direction} x${event.count}`)
+    .join(', ');
 }
 
 export function buildMarkdownReport(report: DailyReport): string {
@@ -19,18 +37,22 @@ export function buildMarkdownReport(report: DailyReport): string {
   ];
 
   for (const item of report.rankings.slice(0, 10)) {
-    const { sentimentConfidence, breakdown } = item;
-    const impactPrefix = breakdown.sentiment > 0 ? '+' : '';
+    const { eventConfidence, breakdown } = item;
+    const eventPrefix = breakdown.eventScore > 0 ? '+' : '';
     const sourceLabel = item.rankingSource === 'signal' ? 'signal-backed idea' : 'backfill watchlist idea';
     lines.push(`- ${item.symbol} (${item.label}): ${item.score}/100 - ${item.conviction} [${sourceLabel}]`);
     lines.push(
-      `  Sentiment: ${sentimentConfidence.label} at ${formatPercent(sentimentConfidence.confidence)} confidence from ${sentimentConfidence.sampleSize} headlines`,
+      `  Event call: ${eventConfidence.label} at ${formatPercent(eventConfidence.confidence)} confidence from ${eventConfidence.sampleSize} events`,
     );
     lines.push(
-      `  Predict probs: pos ${formatPercent(sentimentConfidence.probabilities.positive)}, neutral ${formatPercent(sentimentConfidence.probabilities.neutral)}, neg ${formatPercent(sentimentConfidence.probabilities.negative)}`,
+      `  Event probs: bullish ${formatPercent(eventConfidence.probabilities.bullish)}, neutral ${formatPercent(eventConfidence.probabilities.neutral)}, bearish ${formatPercent(eventConfidence.probabilities.bearish)}`,
+    );
+    lines.push(`  Event mix: ${formatEventMix(eventConfidence.topEvents)}`);
+    lines.push(
+      `  Market score: ${breakdown.momentum > 0 ? '+' : ''}${breakdown.momentum.toFixed(2)} from trend ${formatPercentPoints(breakdown.rawMomentumPercent)} and vol scale ${breakdown.volatilityScale.toFixed(2)}x`,
     );
     lines.push(
-      `  Weighted score impact: ${impactPrefix}${breakdown.sentiment} with confidence weight ${sentimentConfidence.confidence.toFixed(3)} and damping ${breakdown.sentimentConfidenceWeight.toFixed(3)}`,
+      `  Event overlay: ${eventPrefix}${breakdown.eventScore} (macro ${breakdown.macro > 0 ? '+' : ''}${breakdown.macro}, credibility ${breakdown.credibility > 0 ? '+' : ''}${breakdown.credibility}, risk ${breakdown.riskPenalty})`,
     );
     if (item.marketData?.quote) {
       const quote = item.marketData.quote;
@@ -41,6 +63,16 @@ export function buildMarkdownReport(report: DailyReport): string {
       );
     } else {
       lines.push(`  Market data: unavailable | momentum source ${breakdown.momentumSource}`);
+    }
+    if (item.realizedVolatility) {
+      lines.push(
+        `  Realized vol: 5D ${formatPercentPoints(item.realizedVolatility.fiveDay)} | 20D ${formatPercentPoints(item.realizedVolatility.twentyDay)} | ann. 20D ${formatPercentPoints(item.realizedVolatility.annualizedTwentyDay)}`,
+      );
+    }
+    if (item.benchmarkComparison) {
+      lines.push(
+        `  Benchmark: ${item.benchmarkComparison.benchmarkSymbol} | rel. 5D ${formatPercentPoints(item.benchmarkComparison.relativeReturn5d)} | rel. 20D ${formatPercentPoints(item.benchmarkComparison.relativeReturn20d)}`,
+      );
     }
   }
 

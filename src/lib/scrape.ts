@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import type { PublicationSource, ScrapedHeadline, ScrapedSourceResult } from '../types/models.ts';
-import { extractHeadlineCandidates, macroThemeScore, parsePerformanceSignal, sentimentFromHeadline } from './extract.ts';
+import { extractHeadlineCandidates, financeEventsFromHeadline, macroThemeScore, parsePerformanceSignal } from './extract.ts';
 
 const DEFAULT_USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -40,7 +40,7 @@ export async function scrapeSources(sources: PublicationSource[]): Promise<Scrap
         const headlines: ScrapedHeadline[] = extractHeadlineCandidates(rawTexts).map((headline) => ({
           headline,
           performance: parsePerformanceSignal(headline),
-          sentiment: sentimentFromHeadline(headline),
+          events: financeEventsFromHeadline(headline),
           macro: macroThemeScore(headline),
         }));
 

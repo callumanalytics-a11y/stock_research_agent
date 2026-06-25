@@ -12,8 +12,11 @@ function providerFromEnv(): MarketDataProvider {
   if (value === 'yfinance') {
     return 'yfinance';
   }
+  if (value === 'none') {
+    return 'none';
+  }
 
-  return 'none';
+  return 'yfinance';
 }
 
 function createClient(provider: MarketDataProvider): MarketDataClient | null {
@@ -28,7 +31,7 @@ function createClient(provider: MarketDataProvider): MarketDataClient | null {
 }
 
 export async function getMarketDataSnapshots(symbols: string[]): Promise<Record<string, MarketDataSnapshot>> {
-  const provider = 'yfinance'
+  const provider = providerFromEnv();
   const client = createClient(provider);
 
   if (!client) {

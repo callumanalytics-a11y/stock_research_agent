@@ -20,6 +20,50 @@ export interface PerformanceSignal {
   phrase: string;
 }
 
+export type FinanceEventType =
+  | 'earnings'
+  | 'guidance'
+  | 'analyst_rating'
+  | 'regulation'
+  | 'litigation'
+  | 'capital_return'
+  | 'm_and_a'
+  | 'product'
+  | 'macro'
+  | 'other';
+
+export type FinanceEventDirection = 'bullish' | 'neutral' | 'bearish';
+
+export interface FinanceEventSignal {
+  eventType: FinanceEventType;
+  direction: FinanceEventDirection;
+  confidence: number;
+  strength: number;
+  phrase: string;
+  sourceWeight?: number;
+}
+
+export interface FinanceEventProbabilities {
+  bullish: number;
+  neutral: number;
+  bearish: number;
+}
+
+export interface FinanceEventMix {
+  eventType: FinanceEventType;
+  count: number;
+  direction: FinanceEventDirection;
+}
+
+export interface FinanceEventSummary {
+  label: FinanceEventDirection;
+  confidence: number;
+  probabilities: FinanceEventProbabilities;
+  sampleSize: number;
+  topEventType: FinanceEventType | 'none';
+  topEvents: FinanceEventMix[];
+}
+
 export type MarketDataProvider = 'alpaca' | 'yfinance' | 'none';
 
 export interface MarketQuote {
@@ -45,6 +89,22 @@ export interface MarketMomentum {
   dailyPercent: number;
   fiveDayPercent: number;
   twentyDayPercent?: number;
+}
+
+export interface RealizedVolatility {
+  fiveDay: number;
+  twentyDay: number;
+  annualizedTwentyDay: number;
+}
+
+export interface BenchmarkComparison {
+  benchmarkSymbol: string;
+  assetFiveDayReturn: number;
+  assetTwentyDayReturn: number;
+  benchmarkFiveDayReturn: number;
+  benchmarkTwentyDayReturn: number;
+  relativeReturn5d: number;
+  relativeReturn20d: number;
 }
 
 export interface MarketDataSnapshot {
@@ -85,7 +145,7 @@ export interface HeadlineSentiment {
 export interface ScrapedHeadline {
   headline: string;
   performance: PerformanceSignal | null;
-  sentiment: HeadlineSentiment;
+  events: FinanceEventSignal[];
   macro: number;
 }
 
@@ -106,11 +166,13 @@ export interface SupportingHeadline {
 
 export interface AssetSignals {
   performanceSignals: PerformanceSignal[];
-  sentimentSignals: HeadlineSentiment[];
+  eventSignals: FinanceEventSignal[];
   macroSignals: number[];
   sourceWeights: number[];
   matchedHeadlines: SupportingHeadline[];
   marketData: MarketDataSnapshot | null;
+  realizedVolatility: RealizedVolatility | null;
+  benchmarkComparison: BenchmarkComparison | null;
 }
 
 export interface ScoreBreakdown {
@@ -118,8 +180,11 @@ export interface ScoreBreakdown {
   momentum: number;
   rawMomentumPercent: number;
   momentumSource: MomentumSource;
-  sentiment: number;
-  sentimentConfidenceWeight: number;
+  volatilityScale: number;
+  benchmarkRelative: number;
+  volatilityPenalty: number;
+  eventScore: number;
+  eventConfidenceWeight: number;
   macro: number;
   credibility: number;
   riskPenalty: number;
@@ -145,7 +210,9 @@ export interface ScoredAsset {
   score: number;
   conviction: ConvictionLabel;
   marketData: MarketDataSnapshot | null;
-  sentimentConfidence: SentimentConfidenceSummary;
+  realizedVolatility: RealizedVolatility | null;
+  benchmarkComparison: BenchmarkComparison | null;
+  eventConfidence: FinanceEventSummary;
   breakdown: ScoreBreakdown;
 }
 

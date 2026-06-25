@@ -1,5 +1,5 @@
-import type { HeadlineSentiment, PerformanceSignal } from '../types/models.ts';
-import { predictSentimentFromHits } from './sentiment.ts';
+import type { FinanceEventSignal, PerformanceSignal } from '../types/models.ts';
+import { extractFinanceEvents } from './finance-events.ts';
 import { normalizeText, normalizeWhitespace, uniqueBy } from './text.ts';
 
 const PERFORMANCE_PATTERNS = [
@@ -8,48 +8,6 @@ const PERFORMANCE_PATTERNS = [
 ];
 
 const NEGATIVE_DIRECTIONS = ['down', 'lower', 'fall', 'falls', 'drop', 'drops', 'slide', 'slides', 'slump', 'slumps'];
-
-const POSITIVE_TERMS = [
-  'beats',
-  'beat',
-  'surge',
-  'surges',
-  'jump',
-  'jumps',
-  'rally',
-  'rallies',
-  'gain',
-  'gains',
-  'growth',
-  'record high',
-  'upgrade',
-  'buyback',
-  'strong demand',
-  'profit rises',
-  'outperform',
-  'tailwind',
-];
-
-const NEGATIVE_TERMS = [
-  'misses',
-  'miss',
-  'drop',
-  'drops',
-  'fall',
-  'falls',
-  'slump',
-  'slumps',
-  'warning',
-  'probe',
-  'lawsuit',
-  'downgrade',
-  'weak demand',
-  'cuts forecast',
-  'profit warning',
-  'investigation',
-  'recall',
-  'antitrust',
-];
 
 export function extractHeadlineCandidates(rawTexts: string[]): string[] {
   return uniqueBy(
@@ -85,12 +43,8 @@ export function parsePerformanceSignal(text: string): PerformanceSignal | null {
   return null;
 }
 
-export function sentimentFromHeadline(text: string): HeadlineSentiment {
-  const normalized = normalizeText(text);
-  const positiveHits = POSITIVE_TERMS.filter((term) => normalized.includes(term)).length;
-  const negativeHits = NEGATIVE_TERMS.filter((term) => normalized.includes(term)).length;
-
-  return predictSentimentFromHits(positiveHits, negativeHits);
+export function financeEventsFromHeadline(text: string): FinanceEventSignal[] {
+  return extractFinanceEvents(text);
 }
 
 export function macroThemeScore(text: string): number {
