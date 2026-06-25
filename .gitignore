@@ -3,3 +3,12 @@
 .env.*
 !.env.example
 !.env.sample
+
+# OS generated files 
+.DS_Store
+.DS_Store?
+
+# DB files
+*.log
+*.sql
+*.sqlite
