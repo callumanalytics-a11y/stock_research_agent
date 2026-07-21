@@ -32,7 +32,7 @@ function buildHtmlShell(report: DailyReport): string {
     <title>${escapeHtml(title)}</title>
     <meta
       name="description"
-      content="A daily market research report with ranked stocks and index funds, confidence-weighted sentiment, and publication coverage."
+      content="A daily market research report with ranked stocks and index funds, finance-event scoring, and publication coverage."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
@@ -43,7 +43,7 @@ function buildHtmlShell(report: DailyReport): string {
           <p class="kicker">Market Signal Ledger</p>
           <h1>Daily research, arranged like a desk note instead of a dashboard toy.</h1>
           <p class="lede">
-            Confidence-weighted equity and ETF ideas from financial publication headlines, with transparent scoring and source coverage.
+            Market-led equity and ETF ideas with finance-event scoring from financial publication headlines, with transparent scoring and source coverage.
           </p>
         </div>
         <div class="masthead-meta">
@@ -67,8 +67,8 @@ function buildHtmlShell(report: DailyReport): string {
 
         <section class="overview-grid">
           <article class="overview-card">
-            <p class="section-label">Sentiment spread</p>
-            <div id="sentiment-overview" class="pill-row"></div>
+            <p class="section-label">Event mix</p>
+            <div id="event-overview" class="pill-row"></div>
           </article>
           <article class="overview-card">
             <p class="section-label">Quick filters</p>
@@ -82,7 +82,7 @@ function buildHtmlShell(report: DailyReport): string {
               <p class="section-label">Ranked ideas</p>
               <h2>Research queue</h2>
             </div>
-            <p class="section-note">Sorted by weighted score. Cards show sentiment confidence, score drivers, and supporting headlines.</p>
+            <p class="section-note">Sorted by weighted score. Cards show event confidence, score drivers, and supporting headlines.</p>
           </div>
           <div id="asset-grid" class="asset-grid"></div>
         </section>
@@ -309,6 +309,21 @@ body::before {
 .signal-chip.signal {
   background: var(--green-soft);
   color: var(--green);
+}
+
+.signal-chip.market-data {
+  background: rgba(33, 98, 82, 0.12);
+  color: var(--green);
+}
+
+.signal-chip.headline-fallback {
+  background: rgba(159, 110, 47, 0.14);
+  color: #7c5c2b;
+}
+
+.signal-chip.none {
+  background: rgba(21, 32, 31, 0.08);
+  color: var(--muted);
 }
 
 .hero-title {
@@ -722,7 +737,7 @@ const heroPanel = document.getElementById('hero-panel');
 const filters = document.getElementById('filters');
 const sourceList = document.getElementById('source-list');
 const headlineList = document.getElementById('headline-list');
-const sentimentOverview = document.getElementById('sentiment-overview');
+const eventOverview = document.getElementById('event-overview');
 
 const state = {
   filter: 'signal-only',
@@ -751,6 +766,30 @@ function formatAssetType(value) {
   return value.replaceAll('_', ' ');
 }
 
+function momentumSourceLabel(value) {
+  if (value === 'market_data') return 'Market data';
+  if (value === 'headline_fallback') return 'Headline fallback';
+  return 'No momentum';
+}
+
+function eventTypeLabel(value) {
+  return value.replaceAll('_', ' ');
+}
+
+function eventMixLabel(topEvents) {
+  if (!topEvents || topEvents.length === 0) {
+    return 'none';
+  }
+
+  return topEvents
+    .map((event) => eventTypeLabel(event.eventType) + ' ' + event.direction + ' x' + event.count)
+    .join(', ');
+}
+
+function percentPoints(value) {
+  return value.toFixed(2) + '%';
+}
+
 function filteredRankings() {
   if (state.filter === 'all') return report.rankings;
   if (state.filter === 'signal-only') return report.rankings.filter((item) => item.rankingSource === 'signal');
@@ -769,12 +808,13 @@ function renderHero() {
     <div class="hero-topline">
       <span class="hero-chip">Lead idea</span>
       <span class="hero-chip">\${escapeHtml(top.type.replaceAll('_', ' '))}</span>
-      <span class="hero-chip">\${escapeHtml(top.sentimentConfidence.label)} sentiment</span>
+      <span class="hero-chip">\${escapeHtml(top.eventConfidence.label)} event bias</span>
     </div>
     <h2 class="hero-title">\${escapeHtml(top.symbol)} <span style="opacity:.72;">/</span> \${escapeHtml(top.label)}</h2>
     <p class="hero-summary">
-      Highest current score at <strong>\${top.score}/100</strong>, with a <strong>\${pct(top.sentimentConfidence.confidence)}</strong>
-      confidence reading on sentiment and a weighted sentiment contribution of <strong>\${top.breakdown.sentiment > 0 ? '+' : ''}\${top.breakdown.sentiment}</strong>.
+      Highest current score at <strong>\${top.score}/100</strong>, driven mainly by a risk-adjusted market score of
+      <strong>\${top.breakdown.momentum > 0 ? '+' : ''}\${top.breakdown.momentum.toFixed(2)}</strong> and a vol scale of
+      <strong>\${top.breakdown.volatilityScale.toFixed(2)}x</strong>, with event flow acting as the secondary overlay.
     </p>
     <div class="hero-grid">
       <div class="hero-stat">
@@ -786,8 +826,8 @@ function renderHero() {
         <strong>\${top.signalCount} signals</strong>
       </div>
       <div class="hero-stat">
-        <span>Probability split</span>
-        <strong>P \${pct(top.sentimentConfidence.probabilities.positive)}</strong>
+        <span>Event mix</span>
+        <strong>\${eventMixLabel(top.eventConfidence.topEvents)}</strong>
       </div>
     </div>
   \`;
@@ -796,16 +836,16 @@ function renderHero() {
 function renderOverview() {
   const totals = report.rankings.reduce(
     (acc, item) => {
-      acc[item.sentimentConfidence.label] += 1;
+      acc[item.eventConfidence.label] += 1;
       return acc;
     },
-    { positive: 0, neutral: 0, negative: 0 },
+    { bullish: 0, neutral: 0, bearish: 0 },
   );
 
-  sentimentOverview.innerHTML = [
-    ['positive', totals.positive],
+  eventOverview.innerHTML = [
+    ['bullish', totals.bullish],
     ['neutral', totals.neutral],
-    ['negative', totals.negative],
+    ['bearish', totals.bearish],
   ]
     .map(([label, count]) => \`<span class="pill"><span class="pill-count">\${count}</span><strong>\${escapeHtml(label)}</strong></span>\`)
     .join('');
@@ -839,7 +879,9 @@ function renderFilters() {
 function renderAssets() {
   assetGrid.innerHTML = filteredRankings()
     .map((item) => {
-      const sign = item.breakdown.sentiment > 0 ? '+' : '';
+      const marketSign = item.breakdown.momentum > 0 ? '+' : '';
+      const eventOverlaySign = item.breakdown.eventScore > 0 ? '+' : '';
+      const trendSign = item.breakdown.rawMomentumPercent > 0 ? '+' : '';
       return \`
         <article class="asset-card">
           <div class="asset-top">
@@ -848,6 +890,7 @@ function renderAssets() {
                 <span class="asset-symbol">\${item.symbol}</span>
                 <span class="asset-type">\${escapeHtml(formatAssetType(item.type))}</span>
                 <span class="signal-chip \${item.rankingSource}">\${item.rankingSource === 'signal' ? 'Signal-backed' : 'Backfill'}</span>
+                <span class="signal-chip \${item.breakdown.momentumSource.replaceAll('_', '-')}">\${escapeHtml(momentumSourceLabel(item.breakdown.momentumSource))}</span>
               </div>
               <div>
                 <h3 class="asset-title">\${escapeHtml(item.label)}</h3>
@@ -863,34 +906,46 @@ function renderAssets() {
           </div>
 
           <div class="probability-bar">
-            <div class="probability-track" style="--positive: \${Math.max(item.sentimentConfidence.probabilities.positive * 100, 6)}%; --neutral: \${Math.max(item.sentimentConfidence.probabilities.neutral * 100, 6)}%; --negative: \${Math.max(item.sentimentConfidence.probabilities.negative * 100, 6)}%;">
+            <div class="probability-track" style="--positive: \${Math.max(item.eventConfidence.probabilities.bullish * 100, 6)}%; --neutral: \${Math.max(item.eventConfidence.probabilities.neutral * 100, 6)}%; --negative: \${Math.max(item.eventConfidence.probabilities.bearish * 100, 6)}%;">
               <span class="probability-segment positive"></span>
               <span class="probability-segment neutral"></span>
               <span class="probability-segment negative"></span>
             </div>
             <div class="probability-labels">
-              <div><span>Positive</span><strong>\${pct(item.sentimentConfidence.probabilities.positive)}</strong></div>
-              <div><span>Neutral</span><strong>\${pct(item.sentimentConfidence.probabilities.neutral)}</strong></div>
-              <div><span>Negative</span><strong>\${pct(item.sentimentConfidence.probabilities.negative)}</strong></div>
+              <div><span>Bullish</span><strong>\${pct(item.eventConfidence.probabilities.bullish)}</strong></div>
+              <div><span>Neutral</span><strong>\${pct(item.eventConfidence.probabilities.neutral)}</strong></div>
+              <div><span>Bearish</span><strong>\${pct(item.eventConfidence.probabilities.bearish)}</strong></div>
             </div>
           </div>
 
           <div class="breakdown-grid">
             <div class="breakdown-item">
-              <span>Sentiment call</span>
-              <strong>\${escapeHtml(item.sentimentConfidence.label)} at \${pct(item.sentimentConfidence.confidence)}</strong>
+              <span>Market score</span>
+              <strong>\${marketSign}\${item.breakdown.momentum.toFixed(2)}</strong>
             </div>
             <div class="breakdown-item">
-              <span>Weighted impact</span>
-              <strong>\${sign}\${item.breakdown.sentiment}</strong>
+              <span>Raw trend</span>
+              <strong>\${trendSign}\${item.breakdown.rawMomentumPercent.toFixed(2)}%</strong>
             </div>
             <div class="breakdown-item">
-              <span>Damping factor</span>
-              <strong>\${item.breakdown.sentimentConfidenceWeight.toFixed(3)}</strong>
+              <span>Vol scale</span>
+              <strong>\${item.breakdown.volatilityScale.toFixed(2)}x</strong>
             </div>
             <div class="breakdown-item">
-              <span>Momentum</span>
-              <strong>\${item.breakdown.momentum > 0 ? '+' : ''}\${item.breakdown.momentum}</strong>
+              <span>Event overlay</span>
+              <strong>\${eventOverlaySign}\${item.breakdown.eventScore}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>Event call</span>
+              <strong>\${escapeHtml(item.eventConfidence.label)} at \${pct(item.eventConfidence.confidence)}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>Event mix</span>
+              <strong>\${escapeHtml(eventMixLabel(item.eventConfidence.topEvents))}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>Event confidence</span>
+              <strong>\${item.breakdown.eventConfidenceWeight.toFixed(3)}</strong>
             </div>
             <div class="breakdown-item">
               <span>Macro</span>
@@ -899,6 +954,41 @@ function renderAssets() {
             <div class="breakdown-item">
               <span>Credibility</span>
               <strong>\${item.breakdown.credibility > 0 ? '+' : ''}\${item.breakdown.credibility}</strong>
+            </div>
+          </div>
+
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span>Last price</span>
+              <strong>\${item.marketData && item.marketData.quote ? item.marketData.quote.lastPrice.toFixed(2) : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>1D move</span>
+              <strong>\${item.marketData && item.marketData.quote && item.marketData.quote.changePercent !== undefined ? (item.marketData.quote.changePercent > 0 ? '+' : '') + item.marketData.quote.changePercent.toFixed(2) + '%' : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>5D move</span>
+              <strong>\${item.marketData && item.marketData.momentum ? (item.marketData.momentum.fiveDayPercent > 0 ? '+' : '') + item.marketData.momentum.fiveDayPercent.toFixed(2) + '%' : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>5D vol</span>
+              <strong>\${item.realizedVolatility ? percentPoints(item.realizedVolatility.fiveDay) : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>20D vol</span>
+              <strong>\${item.realizedVolatility ? percentPoints(item.realizedVolatility.twentyDay) : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>Benchmark</span>
+              <strong>\${item.benchmarkComparison ? escapeHtml(item.benchmarkComparison.benchmarkSymbol) : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>Rel 5D</span>
+              <strong>\${item.benchmarkComparison ? (item.benchmarkComparison.relativeReturn5d > 0 ? '+' : '') + percentPoints(item.benchmarkComparison.relativeReturn5d) : 'n/a'}</strong>
+            </div>
+            <div class="breakdown-item">
+              <span>Rel 20D</span>
+              <strong>\${item.benchmarkComparison ? (item.benchmarkComparison.relativeReturn20d > 0 ? '+' : '') + percentPoints(item.benchmarkComparison.relativeReturn20d) : 'n/a'}</strong>
             </div>
           </div>
 

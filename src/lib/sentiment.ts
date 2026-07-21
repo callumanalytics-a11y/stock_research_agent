@@ -24,15 +24,15 @@ function probabilitiesFromLogits(logits: SentimentLogits): SentimentProbabilitie
 }
 
 function labelFromProbabilities(probabilities: SentimentProbabilities): SentimentLabel {
-  if (probabilities.positive >= probabilities.neutral && probabilities.positive >= probabilities.negative) {
-    return 'positive';
+  const directionalTop = Math.max(probabilities.positive, probabilities.negative);
+  const directionalGap = Math.abs(probabilities.positive - probabilities.negative);
+  const neutralLead = probabilities.neutral - directionalTop;
+
+  if (neutralLead > 0.015 && directionalGap < 0.08) {
+    return 'neutral';
   }
 
-  if (probabilities.negative >= probabilities.neutral) {
-    return 'negative';
-  }
-
-  return 'neutral';
+  return probabilities.positive >= probabilities.negative ? 'positive' : 'negative';
 }
 
 function confidenceForLabel(label: SentimentLabel, probabilities: SentimentProbabilities): number {
@@ -42,9 +42,9 @@ function confidenceForLabel(label: SentimentLabel, probabilities: SentimentProba
 export function predictSentimentFromHits(positiveHits: number, negativeHits: number): HeadlineSentiment {
   const netSentiment = positiveHits - negativeHits;
   const logits: SentimentLogits = {
-    positive: positiveHits * 1.6 - negativeHits * 1.2,
-    neutral: 0.8 - Math.abs(netSentiment) * 0.7 - (positiveHits + negativeHits) * 0.15,
-    negative: negativeHits * 1.6 - positiveHits * 1.2,
+    positive: positiveHits * 1.6 - negativeHits * 0.85,
+    neutral: 1 - Math.abs(netSentiment) * 0.5 - (positiveHits + negativeHits) * 0.1,
+    negative: negativeHits * 1.6 - positiveHits * 0.85,
   };
   const probabilities = probabilitiesFromLogits(logits);
   const label = labelFromProbabilities(probabilities);

@@ -25,10 +25,12 @@ declare module 'node:url' {
 declare module 'node:assert/strict' {
   export function equal<T>(actual: T, expected: T): void;
   export function ok(value: unknown): void;
+  export function deepEqual<T>(actual: T, expected: T): void;
 
   const assert: {
     equal: typeof equal;
     ok: typeof ok;
+    deepEqual: typeof deepEqual;
   };
 
   export default assert;
@@ -40,4 +42,27 @@ declare module 'node:test' {
 
 declare const process: {
   exitCode?: number;
+  env?: Record<string, string | undefined>;
 };
+
+declare class URLSearchParams {
+  constructor(
+    init?:
+      | string
+      | string[][]
+      | Record<string, string>
+      | Iterable<[string, string]>,
+  );
+  append(name: string, value: string): void;
+  toString(): string;
+}
+
+declare function fetch(
+  input: string,
+  init?: { headers?: Record<string, string> },
+): Promise<{
+  ok: boolean;
+  status: number;
+  json(): Promise<unknown>;
+  text(): Promise<string>;
+}>;
