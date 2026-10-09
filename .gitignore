@@ -3,6 +3,8 @@
 .env.*
 !.env.example
 !.env.sample
+.dev.vars
+.wrangler/
 
 # OS generated files 
 .DS_Store

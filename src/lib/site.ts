@@ -45,6 +45,13 @@ function buildHtmlShell(report: DailyReport): string {
           <p class="lede">
             Market-led equity and ETF ideas with finance-event scoring from financial publication headlines, with transparent scoring and source coverage.
           </p>
+          <div class="demo-control">
+            <button id="run-demo" class="run-button" type="button">
+              <span class="run-button-icon" aria-hidden="true">&#9654;</span>
+              <span id="run-demo-label">Load demo report</span>
+            </button>
+            <span id="run-demo-status" class="run-status" role="status">Press to load the report snapshot</span>
+          </div>
         </div>
         <div class="masthead-meta">
           <div class="meta-card">
@@ -227,6 +234,56 @@ body::before {
   color: var(--muted);
   font-size: 1.02rem;
   line-height: 1.7;
+}
+
+.demo-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.run-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fffaf1;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+
+.run-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: var(--green);
+}
+
+.run-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.run-button.is-running .run-button-icon {
+  animation: spin 800ms linear infinite;
+}
+
+.run-button-icon {
+  font-size: 0.72rem;
+}
+
+.run-status {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .masthead-meta {
@@ -738,6 +795,9 @@ const filters = document.getElementById('filters');
 const sourceList = document.getElementById('source-list');
 const headlineList = document.getElementById('headline-list');
 const eventOverview = document.getElementById('event-overview');
+const runDemoButton = document.getElementById('run-demo');
+const runDemoLabel = document.getElementById('run-demo-label');
+const runDemoStatus = document.getElementById('run-demo-status');
 
 const state = {
   filter: 'signal-only',
@@ -1053,13 +1113,53 @@ function renderMeta() {
   document.getElementById('source-count').textContent = String(report.sources.length);
 }
 
-renderMeta();
-renderHero();
-renderOverview();
-renderFilters();
-renderAssets();
-renderSources();
-renderHeadlines();`;
+function renderBlankState() {
+  document.getElementById('published-at').textContent = 'Waiting to run';
+  document.getElementById('asset-count').textContent = '—';
+  document.getElementById('source-count').textContent = '—';
+  heroPanel.innerHTML = \`
+    <div class="hero-topline">
+      <span class="hero-chip">Demo ready</span>
+    </div>
+    <h2 class="hero-title">Your market report is waiting.</h2>
+    <p class="hero-summary">Press “Load demo report” to populate the ranked ideas, market data, event scoring, and headline tape.</p>
+  \`;
+  eventOverview.innerHTML = '';
+  filters.innerHTML = '';
+  assetGrid.innerHTML = '';
+  sourceList.innerHTML = '';
+  headlineList.innerHTML = '';
+}
+
+function renderReport() {
+  renderMeta();
+  renderHero();
+  renderOverview();
+  renderFilters();
+  renderAssets();
+  renderSources();
+  renderHeadlines();
+}
+
+function runLocalDemo() {
+  if (!runDemoButton || !runDemoLabel || !runDemoStatus) return;
+
+  runDemoButton.disabled = true;
+  runDemoButton.classList.add('is-running');
+  runDemoLabel.textContent = 'Running demo...';
+  runDemoStatus.textContent = 'Refreshing the local report preview';
+
+  window.setTimeout(() => {
+    renderReport();
+    runDemoButton.disabled = false;
+    runDemoButton.classList.remove('is-running');
+    runDemoLabel.textContent = 'Reload demo report';
+    runDemoStatus.textContent = 'Demo complete · static snapshot ready';
+  }, 900);
+}
+
+runDemoButton?.addEventListener('click', runLocalDemo);
+renderBlankState();`;
 }
 
 export function buildSiteAssets(report: DailyReport): SiteAssets {
