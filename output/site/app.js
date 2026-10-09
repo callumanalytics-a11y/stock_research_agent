@@ -6,6 +6,9 @@ const filters = document.getElementById('filters');
 const sourceList = document.getElementById('source-list');
 const headlineList = document.getElementById('headline-list');
 const eventOverview = document.getElementById('event-overview');
+const runDemoButton = document.getElementById('run-demo');
+const runDemoLabel = document.getElementById('run-demo-label');
+const runDemoStatus = document.getElementById('run-demo-status');
 
 const state = {
   filter: 'signal-only',
@@ -321,10 +324,50 @@ function renderMeta() {
   document.getElementById('source-count').textContent = String(report.sources.length);
 }
 
-renderMeta();
-renderHero();
-renderOverview();
-renderFilters();
-renderAssets();
-renderSources();
-renderHeadlines();
+function renderBlankState() {
+  document.getElementById('published-at').textContent = 'Waiting to run';
+  document.getElementById('asset-count').textContent = '—';
+  document.getElementById('source-count').textContent = '—';
+  heroPanel.innerHTML = `
+    <div class="hero-topline">
+      <span class="hero-chip">Demo ready</span>
+    </div>
+    <h2 class="hero-title">Your market report is waiting.</h2>
+    <p class="hero-summary">Press “Load demo report” to populate the ranked ideas, market data, event scoring, and headline tape.</p>
+  `;
+  eventOverview.innerHTML = '';
+  filters.innerHTML = '';
+  assetGrid.innerHTML = '';
+  sourceList.innerHTML = '';
+  headlineList.innerHTML = '';
+}
+
+function renderReport() {
+  renderMeta();
+  renderHero();
+  renderOverview();
+  renderFilters();
+  renderAssets();
+  renderSources();
+  renderHeadlines();
+}
+
+function runLocalDemo() {
+  if (!runDemoButton || !runDemoLabel || !runDemoStatus) return;
+
+  runDemoButton.disabled = true;
+  runDemoButton.classList.add('is-running');
+  runDemoLabel.textContent = 'Running demo...';
+  runDemoStatus.textContent = 'Refreshing the local report preview';
+
+  window.setTimeout(() => {
+    renderReport();
+    runDemoButton.disabled = false;
+    runDemoButton.classList.remove('is-running');
+    runDemoLabel.textContent = 'Reload demo report';
+    runDemoStatus.textContent = 'Demo complete · static snapshot ready';
+  }, 900);
+}
+
+runDemoButton?.addEventListener('click', runLocalDemo);
+renderBlankState();

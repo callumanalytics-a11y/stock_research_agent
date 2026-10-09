@@ -6,6 +6,8 @@
   "scripts": {
     "daily": "node src/run-daily.ts",
     "site": "node src/render-site.ts",
+    "cf:dev": "npx wrangler@latest dev",
+    "cf:deploy": "npx wrangler@latest deploy --config wrangler.jsonc",
     "test": "node --test",
     "typecheck": "node ../node_modules/typescript/bin/tsc --project tsconfig.json --noEmit"
   },

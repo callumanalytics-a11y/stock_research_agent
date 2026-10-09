@@ -1,0 +1,56 @@
+name: Generate and deploy daily report
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_id:
+        description: Request id supplied by the Cloudflare Worker
+        required: false
+        type: string
+  schedule:
+    - cron: '30 7 * * 1-5'
+
+concurrency:
+  group: daily-report
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      MARKET_DATA_PROVIDER: yfinance
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Validate project
+        run: |
+          npm run typecheck
+          npm test
+
+      - name: Generate report and static site
+        run: npm run daily
+
+      - name: Commit refreshed report snapshot
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add output/latest-report.json output/latest-report.md output/site
+          git diff --cached --quiet || git commit -m 'chore: refresh daily report'
+          git push

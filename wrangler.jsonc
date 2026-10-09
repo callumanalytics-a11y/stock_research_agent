@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "stock-research-agent",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-07",
+  "assets": {
+    "directory": "./output/site",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}
