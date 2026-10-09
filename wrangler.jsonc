@@ -3,6 +3,8 @@
   "name": "stock-research-agent",
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-07",
+  "preview_urls": true,
+  "previews": {},
   "assets": {
     "directory": "./output/site",
     "binding": "ASSETS",
